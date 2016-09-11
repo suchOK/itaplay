@@ -49,5 +49,4 @@ class PlayerView(View):
     def delete(self, request, player_id):
         Player.delete_by_id(player_id)
         return HttpResponse(201)     
-
-              
+        

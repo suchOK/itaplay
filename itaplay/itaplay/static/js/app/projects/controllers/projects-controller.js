@@ -148,20 +148,17 @@ itaplay.controller('ProjectCtrl', function($scope, $http, $route) {
     };
 });
 
-itaplay.controller('EditProjectCtrl', function ($scope, $http, $routeParams, $location, $mdDialog) {
+itaplay.controller('EditProjectCtrl', function ($scope, $http, $routeParams, $location, $window, $mdDialog) {
 
     var id = $routeParams.project_id;
-
     $http.get("api/projects/" + id + "/")
         .then(function (response) {
             $scope.project = response.data;
         });
-     $http.get("player/player_view/").then(function (response) {
-      $scope.data= response.data;
-     }, function(response) {
-          console.log(response);
-        $scope.data = "Something went wrong";
-    });
+    $http.get("api/projects_to_players/" + id)
+        .then(function (response) {
+            $scope.data = response.data;
+     });
 
     $scope.addPlayers = function ($event){
         $mdDialog.show({
@@ -186,7 +183,7 @@ itaplay.controller('EditProjectCtrl', function ($scope, $http, $routeParams, $lo
         };
         $http.put("api/projects_to_players/", data)
             .success(function () {
-                $location.path('/projects');
+                $window.location.reload();
             });
     };
     $scope.update = function (project) {
@@ -199,7 +196,7 @@ itaplay.controller('EditProjectCtrl', function ($scope, $http, $routeParams, $lo
     $scope.delete = function (project) {
         $http.delete("api/projects/" + project.id + "/")
             .success(function () {
-                $location.path('/projects');
+                $location.path('/projects/');
             });
     };
     

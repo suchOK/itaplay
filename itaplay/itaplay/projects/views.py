@@ -7,8 +7,10 @@ from company.models import Company
 
 from xml.etree import ElementTree as ET
 
-from django.views.generic.base import View
 from django.http import HttpResponse
+from django.views.generic.base import View
+from django.forms.models import model_to_dict
+
 from rest_framework.response import Response
 from rest_framework import status, generics
 
@@ -55,10 +57,11 @@ class AdviserProjectList(generics.ListCreateAPIView):
             return Response(status=status.HTTP_400_BAD_REQUEST)
         request.data["id_company"] = request.user.adviseruser.id_company_id
         project = AdviserProject.objects.get(id=self.create(request, *args, **kwargs).data["id"])
-        for obj in request.data.get("players"):
-            player = Player.get_by_id(obj["id"])
-            player.project = project 
-            player.save()  
+        if (request.data.get("players")):
+            for obj in request.data.get("players"):
+                player = Player.get_by_id(obj["id"])
+                player.project = project 
+                player.save()  
         return HttpResponse(status=201)
 
 
@@ -73,8 +76,16 @@ class AdviserProjectDetails(generics.RetrieveUpdateDestroyAPIView):
 
 
 class AdviserProjectToPlayers(View):
+
+    def get(self, request, project_id):
+        players = Player.objects.filter(project=project_id)
+        data = [model_to_dict(i) for i in players]
+        return HttpResponse(json.dumps(data))
+        
     def put(self, request):
         data = json.loads(request.body)
+        if (not data.get("players")):
+            return Response(status=status.HTTP_400_BAD_REQUEST)
         project = AdviserProject.objects.get(id = data.get("project")["id"])
         for obj in data.get("players"):
             player = Player.get_by_id(obj["id"])
